@@ -35,9 +35,10 @@ const delay = (timeInMinutes) => {
         name: 'time',
         message: 'Select time for each claim',
         choices: [
-            { title: '2 hours', value: (2 * 60) },
-            { title: '3 hours', value: (3 * 60) },
             { title: '4 hours', value: (4 * 60) },
+            { title: '6 hours', value: (6 * 60) },
+            { title: '8 hours', value: (8 * 60) },
+            { title: '12 hours', value: (12 * 60) },
         ],
     });
 
