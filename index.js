@@ -1,3 +1,6 @@
+// Tambahkan baris berikut di awal skrip Anda
+process.env.NODE_OPTIONS = '--no-deprecation';
+
 const { connect, keyStores, KeyPair } = require("near-api-js");
 const { readFileSync } = require("fs");
 const moment = require("moment");
