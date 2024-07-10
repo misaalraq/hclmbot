@@ -49,6 +49,26 @@ const delay = (timeInMinutes) => {
         message: 'Use Telegram Bot as Notification?',
     });
 
+    // HEADER
+    const header = `
+\x1b[33mAUTO TRANSACTION BOT FOR SONIC ODYSSEY BY\x1b[0m
+
+\x1b[31m _______  _______  _______  ___ ___  _______  _______  ___ ___  _______  _______  _______ 
+|   _   ||   _   \\|   _   ||   Y   ||   _   ||       ||   Y   ||   _   ||   Y   ||   _   |
+|.  1   ||.  l   /|.  |   ||.      ||.  |   ||.|   | ||.  1   ||.  1___||.  |   ||   1___|
+\x1b[37m|.  ____||.  _   1|.  |   ||. \\_/  ||.  |   |\\-|.  |-'|.  _   ||.  __)_ |.  |   ||____   |
+|:  |    |:  |   ||:  1   ||:  1   ||:  1   |  |:  |  |:  |   ||:  1   ||:  1   ||:  1   |
+|::.|    |::.|:. ||::.. . ||::.|:. ||::.. . |  |::.|  |::.|:. ||::.. . ||::.. . ||::.. . |
+\`---'    \`--- ---'\`-------' \`--- ---'\`-------'  \`---'  \`--- ---'\`-------\`-------\`-------'
+
+\x1b[36mRecoded by Mr. Promotheus - (origin: by Mnuralim)\x1b[0m
+\x1b[36mTreat me es teh: \x1b[34m0x72b58b99cd197db013c110b5643fb64008c0a209\x1b[0m
+\x1b[32mNot a professional coder!\x1b[0m
+`;
+
+    console.clear(); // Membersihkan konsol sebelum menampilkan header
+    console.log(header);
+
     // CLAIMING PROCESS
     while (true) {
         for (const [index, value] of listAccounts.entries()) {
