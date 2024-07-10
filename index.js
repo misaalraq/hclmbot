@@ -25,13 +25,27 @@ const delay = (timeInMinutes) => {
     });
 }
 
-(async () => {
-    // IMPORT LIST ACCOUNT
-    const listAccounts = readFileSync("./private.txt", "utf-8")
-        .split("\n")
-        .map((a) => a.trim())
-        .filter((a) => !!a); // Filter out any empty lines
+// HEADER
+const header = `
+\x1b[33mAUTO TRANSACTION BOT FOR SONIC ODYSSEY BY\x1b[0m
 
+\x1b[31m _______  _______  _______  ___ ___  _______  _______  ___ ___  _______  _______  _______ 
+|   _   ||   _   \\|   _   ||   Y   ||   _   ||       ||   Y   ||   _   ||   Y   ||   _   |
+|.  1   ||.  l   /|.  |   ||.      ||.  |   ||.|   | ||.  1   ||.  1___||.  |   ||   1___|
+\x1b[37m|.  ____||.  _   1|.  |   ||. \\_/  ||.  |   |\\-|.  |-'|.  _   ||.  __)_ |.  |   ||____   |
+|:  |    |:  |   ||:  1   ||:  1   ||:  1   |  |:  |  |:  |   ||:  1   ||:  1   ||:  1   |
+|::.|    |::.|:. ||::.. . ||::.|:. ||::.. . |  |::.|  |::.|:. ||::.. . ||::.. . ||::.. . |
+\`---'    \`--- ---'\`-------' \`--- ---'\`-------'  \`---'  \`--- ---'\`-------\`-------\`-------'
+
+\x1b[36mRecoded by Mr. Promotheus - (origin: by Mnuralim)\x1b[0m
+\x1b[36mTreat me es teh: \x1b[34m0x72b58b99cd197db013c110b5643fb64008c0a209\x1b[0m
+\x1b[32mNot a professional coder!\x1b[0m
+`;
+
+console.clear(); // Membersihkan konsol sebelum menampilkan header
+console.log(header);
+
+(async () => {
     // CHOOSE DELAY
     const chooseDelay = await prompts({
         type: 'select',
@@ -51,6 +65,12 @@ const delay = (timeInMinutes) => {
         name: 'useTelegramBot',
         message: 'Use Telegram Bot as Notification?',
     });
+
+    // IMPORT LIST ACCOUNT
+    const listAccounts = readFileSync("./private.txt", "utf-8")
+        .split("\n")
+        .map((a) => a.trim())
+        .filter((a) => !!a); // Filter out any empty lines
 
     // CLAIMING PROCESS
     while (true) {
