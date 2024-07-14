@@ -10,7 +10,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const TelegramBot = require("node-telegram-bot-api");
-const { exec } = require("child_process");
 
 // LOAD ENV
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -107,14 +106,34 @@ console.log(header);
                     .map(outcome => outcome.outcome.logs)
                     .flat();
 
-                // ADD NEAR VIEW FUNCTION HERE
-                exec(`near view game.hot.tg ft_balance_of '{"account_id": "${ACCOUNT_ID}"}' --networkId mainnet`, (err, stdout, stderr) => {
-                    if (err) {
-                        console.error(`Error calling near view: ${err}`);
-                        return;
+                let userAmount = null;
+                let villageAmount = null;
+
+                logs.forEach(log => {
+                    if (log.includes("EVENT_JSON")) {
+                        const eventJson = JSON.parse(log.split("EVENT_JSON:")[1]);
+                        if (eventJson.event === "ft_mint") {
+                            eventJson.data.forEach(data => {
+                                if (data.owner_id === ACCOUNT_ID) {
+                                    userAmount = data.amount;
+                                } else if (data.owner_id.includes("village")) {
+                                    villageAmount = data.amount;
+                                }
+                            });
+                        }
                     }
-                    console.log(`Balance for ${ACCOUNT_ID}: ${stdout}`);
                 });
+
+                const formatAmount = (amount) => {
+                    return (parseInt(amount, 10) / 1e6).toFixed(6);
+                };
+
+                const formattedUserAmount = userAmount ? formatAmount(userAmount) : "0.000000";
+                const formattedVillageAmount = villageAmount ? formatAmount(villageAmount) : "0.000000";
+
+                // Display balance information
+                console.log(`Balance for ${ACCOUNT_ID}: View call: game.hot.tg.ft_balance_of({"account_id": "${ACCOUNT_ID}"})`);
+                console.log(`'${formattedUserAmount}'`);
 
                 console.log(`Tx: https://nearblocks.io/id/txns/${transactionHash}`);
                 console.log("====");
