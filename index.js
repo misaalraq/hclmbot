@@ -45,6 +45,19 @@ const header = `
 console.clear(); // Membersihkan konsol sebelum menampilkan header
 console.log(header);
 
+// GET BALANCE FUNCTION
+const getBalance = async (wallet, accountId) => {
+    try {
+        const balance = await wallet.viewFunction("game.hot.tg", "ft_balance_of", {
+            account_id: accountId
+        });
+        return balance;
+    } catch (error) {
+        console.error(`Error getting balance for ${accountId}: ${error}`);
+        return null;
+    }
+};
+
 (async () => {
     // CHOOSE DELAY
     const chooseDelay = await prompts({
@@ -106,39 +119,26 @@ console.log(header);
                     .map(outcome => outcome.outcome.logs)
                     .flat();
 
-                let userAmount = null;
-                let villageAmount = null;
+                // Wait for transaction to be finalized (optional)
+                await connection.provider.txStatus(transactionHash, ACCOUNT_ID);
 
-                logs.forEach(log => {
-                    if (log.includes("EVENT_JSON")) {
-                        const eventJson = JSON.parse(log.split("EVENT_JSON:")[1]);
-                        if (eventJson.event === "ft_mint") {
-                            eventJson.data.forEach(data => {
-                                if (data.owner_id === ACCOUNT_ID) {
-                                    userAmount = data.amount;
-                                } else if (data.owner_id.includes("village")) {
-                                    villageAmount = data.amount;
-                                }
-                            });
-                        }
-                    }
-                });
+                // GET UPDATED BALANCE
+                const balance = await getBalance(wallet, ACCOUNT_ID);
 
+                // Format balance for display
                 const formatAmount = (amount) => {
                     return (parseInt(amount, 10) / 1e6).toFixed(6);
                 };
 
                 const formattedUserAmount = userAmount ? formatAmount(userAmount) : "0.000000";
                 const formattedVillageAmount = villageAmount ? formatAmount(villageAmount) : "0.000000";
+                const formattedBalance = balance ? formatAmount(balance) : "0.000000";
 
-                // Display total balance after claiming
-                const totalBalance = await wallet.viewFunction(
-                    "game.hot.tg",
-                    "ft_balance_of",
-                    { account_id: ACCOUNT_ID }
-                );
-                console.log(`Balance for ${ACCOUNT_ID}: ${totalBalance}`);
-
+                console.log(`Claim Berhasil!`);
+                console.log(`Akun: ${ACCOUNT_ID}`);
+                console.log(`Jumlah: ${formattedUserAmount} HOT (for user)`);
+                console.log(`Jumlah: ${formattedVillageAmount} HOT (for village)`);
+                console.log(`Balance HOT: ${formattedBalance}`);
                 console.log(`Tx: https://nearblocks.io/id/txns/${transactionHash}`);
                 console.log("====");
 
@@ -147,7 +147,7 @@ console.log(header);
                     try {
                         await bot.sendMessage(
                             userId,
-                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Balance*:\n- ${formattedBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
                             { disable_web_page_preview: true, parse_mode: 'Markdown' }
                         );
                     } catch (error) {
