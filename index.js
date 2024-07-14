@@ -131,10 +131,18 @@ console.log(header);
                 const formattedUserAmount = userAmount ? formatAmount(userAmount) : "0.000000";
                 const formattedVillageAmount = villageAmount ? formatAmount(villageAmount) : "0.000000";
 
+                // Get HOT balance after claiming
+                const getBalance = await wallet.viewFunction(
+                    "game.hot.tg",  // Kontrak yang menangani token HOT
+                    "ft_balance_of", // Metode untuk mendapatkan saldo
+                    { account_id: ACCOUNT_ID } // Parameter spesifik untuk mendapatkan saldo akun
+                );
+
                 console.log(`Claim Berhasil!`);
                 console.log(`Akun: ${ACCOUNT_ID}`);
                 console.log(`Jumlah: ${formattedUserAmount} HOT (for user)`);
                 console.log(`Jumlah: ${formattedVillageAmount} HOT (for village)`);
+                console.log(`Saldo HOT saat ini: ${formatAmount(getBalance)} HOT`);
                 console.log(`Tx: https://nearblocks.io/id/txns/${transactionHash}`);
                 console.log("====");
 
@@ -143,7 +151,7 @@ console.log(header);
                     try {
                         await bot.sendMessage(
                             userId,
-                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Balance*: ${formatAmount(getBalance)} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
                             { disable_web_page_preview: true, parse_mode: 'Markdown' }
                         );
                     } catch (error) {
