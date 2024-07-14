@@ -27,7 +27,7 @@ const delay = (timeInMinutes) => {
 
 // HEADER
 const header = `
-\x1b[33mAUTO TRANSACTION BOT FOR SONIC ODYSSEY BY\x1b[0m
+\x1b[33mAUTO TRANSACTION BOT FOR HOT MINING BY\x1b[0m
 
 \x1b[31m _______  _______  _______  ___ ___  _______  _______  ___ ___  _______  _______  _______ 
 |   _   ||   _   \\|   _   ||   Y   ||   _   ||       ||   Y   ||   _   ||   Y   ||   _   |
