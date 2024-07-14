@@ -43,7 +43,7 @@ const header = `
 \x1b[32mNot a professional coder!\x1b[0m
 `;
 
-console.clear(); // Membersihkan konsol sebelum menampilkan header
+console.clear(); // Clear console before displaying header
 console.log(header);
 
 (async () => {
