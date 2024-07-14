@@ -12,13 +12,13 @@ dotenv.config();
         const token = process.env.TELEGRAM_BOT_TOKEN;
         const userId = process.env.TELEGRAM_USER_ID;
 
-        // Load accounts from private.txt
+        // Load accounts from private.txt for mainnet
         const listAccounts = readFileSync("./private.txt", "utf-8")
             .split("\n")
             .map((a) => a.trim())
             .filter((a) => !!a); // Filter out any empty lines
 
-        // Initialize NEAR connection
+        // Initialize NEAR connection for mainnet
         const connection = await connect({
             networkId: "mainnet",
             nodeUrl: "https://rpc.mainnet.near.org",
@@ -43,9 +43,9 @@ dotenv.config();
                 // Prepare argument as a JSON string
                 const argsJson = JSON.stringify({ account_id: ACCOUNT_ID });
 
-                // Get HOT balance
+                // Get HOT balance using viewFunction
                 const hotBalance = await wallet.viewFunction(
-                    "game.hot.tg",
+                    "game.hot.near", // Adjust contract account name if different on mainnet
                     "ft_balance_of",
                     argsJson
                 );
