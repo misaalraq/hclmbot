@@ -20,7 +20,7 @@ dotenv.config();
 
         // Initialize NEAR connection
         const connection = await connect({
-            networkId: "mainnet", // Adjust this if using a different network
+            networkId: "mainnet",
             nodeUrl: "https://rpc.mainnet.near.org",
             deps: {
                 keyStore: new keyStores.InMemoryKeyStore(),
