@@ -111,7 +111,7 @@ console.log(header);
                 let villageAmount = null;
 
                 logs.forEach(log => {
-                    if (log includes "EVENT_JSON")) {
+                    if (log.includes("EVENT_JSON")) {
                         const eventJson = JSON.parse(log.split("EVENT_JSON:")[1]);
                         if (eventJson.event === "ft_mint") {
                             eventJson.data.forEach(data => {
