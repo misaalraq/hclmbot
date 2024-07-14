@@ -111,7 +111,7 @@ console.log(header);
                 let villageAmount = null;
 
                 logs.forEach(log => {
-                    if (log.includes("EVENT_JSON")) {
+                    if (log includes "EVENT_JSON")) {
                         const eventJson = JSON.parse(log.split("EVENT_JSON:")[1]);
                         if (eventJson.event === "ft_mint") {
                             eventJson.data.forEach(data => {
@@ -139,7 +139,8 @@ console.log(header);
                     const viewCommand = `near view game.hot.tg ft_balance_of '{"account_id": "${ACCOUNT_ID}"}' --networkId mainnet`;
                     const hotBalanceRaw = execSync(viewCommand).toString().trim();
                     
-                    const hotBalanceMatch = hotBalanceRaw.match(/result: (.*)/);
+                    // Extracting balance using regex to handle possible additional characters
+                    const hotBalanceMatch = hotBalanceRaw.match(/'([0-9]+)'/);
                     if (hotBalanceMatch && hotBalanceMatch[1]) {
                         const hotBalance = hotBalanceMatch[1].trim();
                         formattedBalance = (parseInt(hotBalance, 10) / 1e6).toFixed(6);
