@@ -3,61 +3,171 @@ process.env.NODE_OPTIONS = '--no-deprecation --no-warnings';
 
 const { connect, keyStores, KeyPair } = require("near-api-js");
 const { readFileSync } = require("fs");
+const moment = require("moment");
+const prompts = require("prompts");
+const crypto = require("crypto");
 const dotenv = require('dotenv');
 dotenv.config();
 
+const TelegramBot = require("node-telegram-bot-api");
+
+// LOAD ENV
+const token = process.env.TELEGRAM_BOT_TOKEN;
+const userId = process.env.TELEGRAM_USER_ID;
+
+// INIT TELEGRAM BOT
+const bot = new TelegramBot(token);
+
+// CREATE DELAY IN MILLISECONDS
+const delay = (timeInMinutes) => {
+    return new Promise((resolve) => {
+        return setTimeout(resolve, timeInMinutes * 60 * 1000);
+    });
+}
+
+// HEADER
+const header = `
+\x1b[33mAUTO TRANSACTION BOT FOR HOT MINING BY\x1b[0m
+
+\x1b[31m _______  _______  _______  ___ ___  _______  _______  ___ ___  _______  _______  _______ 
+|   _   ||   _   \\|   _   ||   Y   ||   _   ||       ||   Y   ||   _   ||   Y   ||   _   |
+|.  1   ||.  l   /|.  |   ||.      ||.  |   ||.|   | ||.  1   ||.  1___||.  |   ||   1___|
+\x1b[37m|.  ____||.  _   1|.  |   ||. \\_/  ||.  |   |\\-|.  |-'|.  _   ||.  __)_ |.  |   ||____   |
+|:  |    |:  |   ||:  1   ||:  1   ||:  1   |  |:  |  |:  |   ||:  1   ||:  1   ||:  1   |
+|::.|    |::.|:. ||::.. . ||::.|:. ||::.. . |  |::.|  |::.|:. ||::.. . ||::.. . ||::.. . |
+\`---'    \`--- ---'\`-------' \`--- ---'\`-------'  \`---'  \`--- ---'\`-------\`-------\`-------'
+
+\x1b[36mRecoded by Mr. Promotheus - (origin: by Mnuralim)\x1b[0m
+\x1b[36mTreat me es teh: \x1b[34m0x72b58b99cd197db013c110b5643fb64008c0a209\x1b[0m
+\x1b[32mNot a professional coder!\x1b[0m
+`;
+
+console.clear(); // Membersihkan konsol sebelum menampilkan header
+console.log(header);
+
 (async () => {
-    try {
-        // Load environment variables
-        const token = process.env.TELEGRAM_BOT_TOKEN;
-        const userId = process.env.TELEGRAM_USER_ID;
+    // CHOOSE DELAY
+    const chooseDelay = await prompts({
+        type: 'select',
+        name: 'time',
+        message: 'Select time for each claim',
+        choices: [
+            { title: '4 hours', value: (4 * 60) },
+            { title: '6 hours', value: (6 * 60) },
+            { title: '8 hours', value: (8 * 60) },
+            { title: '12 hours', value: (12 * 60) },
+        ],
+    });
 
-        // Load accounts from private.txt for mainnet
-        const listAccounts = readFileSync("./private.txt", "utf-8")
-            .split("\n")
-            .map((a) => a.trim())
-            .filter((a) => !!a); // Filter out any empty lines
+    // USE TELEGRAM BOT CONFIRMATION
+    const botConfirm = await prompts({
+        type: 'confirm',
+        name: 'useTelegramBot',
+        message: 'Use Telegram Bot as Notification?',
+    });
 
-        // Initialize NEAR connection for mainnet
-        const connection = await connect({
-            networkId: "mainnet",
-            nodeUrl: "https://rpc.mainnet.near.org",
-            deps: {
-                keyStore: new keyStores.InMemoryKeyStore(),
-            },
-        });
+    // IMPORT LIST ACCOUNT
+    const listAccounts = readFileSync("./private.txt", "utf-8")
+        .split("\n")
+        .map((a) => a.trim())
+        .filter((a) => !!a); // Filter out any empty lines
 
-        // Process each account
-        for (const account of listAccounts) {
-            const [PRIVATE_KEY, ACCOUNT_ID] = account.split("|").map((item) => item.trim());
+    // CLAIMING PROCESS
+    while (true) {
+        for (const [index, value] of listAccounts.entries()) {
+            const [PRIVATE_KEY, ACCOUNT_ID] = value.split("|");
 
             try {
-                // Set up key pair and key store
                 const myKeyStore = new keyStores.InMemoryKeyStore();
                 const keyPair = KeyPair.fromString(PRIVATE_KEY);
                 await myKeyStore.setKey("mainnet", ACCOUNT_ID, keyPair);
 
-                // Get wallet instance
+                const connection = await connect({
+                    networkId: "mainnet",
+                    nodeUrl: "https://rpc.mainnet.near.org",
+                    keyStore: myKeyStore,
+                });
+
                 const wallet = await connection.account(ACCOUNT_ID);
 
-                // Prepare argument as a JSON string
-                const argsJson = JSON.stringify({ account_id: ACCOUNT_ID });
-
-                // Get HOT balance using viewFunction
-                const hotBalance = await wallet.viewFunction(
-                    "game.hot.near", // Adjust contract account name if different on mainnet
-                    "ft_balance_of",
-                    argsJson
+                console.log(
+                    `[${moment().format("HH:mm:ss")}] Claiming ${ACCOUNT_ID}`
                 );
 
-                console.log(`HOT Balance for ${ACCOUNT_ID}: ${hotBalance} HOT`);
+                // CALL CONTRACT AND GET THE TX HASH
+                const callContract = await wallet.functionCall({
+                    contractId: "game.hot.tg",
+                    methodName: "claim",
+                    args: {},
+                });
 
+                const transactionHash = callContract.transaction.hash;
+                const logs = callContract.receipts_outcome
+                    .map(outcome => outcome.outcome.logs)
+                    .flat();
+
+                let villageAmount = null;
+
+                logs.forEach(log => {
+                    if (log.includes("EVENT_JSON")) {
+                        const eventJson = JSON.parse(log.split("EVENT_JSON:")[1]);
+                        if (eventJson.event === "ft_mint") {
+                            eventJson.data.forEach(data => {
+                                if (data.owner_id.includes("village")) {
+                                    villageAmount = data.amount;
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // CALL CONTRACT AGAIN TO GET UPDATED USER BALANCE
+                const balanceResult = await connection.provider.query({
+                    request_type: 'view_state',
+                    account_id: 'game.hot.tg',
+                    method_name: 'ft_balance_of',
+                    args_base64: Buffer.from(JSON.stringify({ "account_id": ACCOUNT_ID })).toString('base64')
+                });
+
+                const userAmount = balanceResult.result;
+
+                const formatAmount = (amount) => {
+                    return (parseInt(amount, 10) / 1e6).toFixed(6);
+                };
+
+                const formattedUserAmount = formatAmount(userAmount);
+                const formattedVillageAmount = villageAmount ? formatAmount(villageAmount) : "0.000000";
+
+                console.log(`Claim Berhasil!`);
+                console.log(`Akun: ${ACCOUNT_ID}`);
+                console.log(`Jumlah: ${formattedUserAmount} HOT (for user)`);
+                console.log(`Jumlah: ${formattedVillageAmount} HOT (for village)`);
+                console.log(`Tx: https://nearblocks.io/id/txns/${transactionHash}`);
+                console.log("====");
+
+                // SEND NOTIFICATION BOT
+                if (botConfirm.useTelegramBot) {
+                    try {
+                        await bot.sendMessage(
+                            userId,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            { disable_web_page_preview: true, parse_mode: 'Markdown' }
+                        );
+                    } catch (error) {
+                        console.log(`Send message failed, ${error}`)
+                    }
+                }
             } catch (error) {
                 console.error(`Error processing ${ACCOUNT_ID}: ${error}`);
             }
         }
 
-    } catch (error) {
-        console.error(`General error: ${error}`);
+        // REDUCE REAL MINUTES WITH RANDOM
+        const randomMinutes = crypto.randomInt(1, 9);
+        const delayMinutes = chooseDelay.time - randomMinutes;
+
+        console.log(`[ NEXT CLAIM IN ${moment().add(delayMinutes, 'minutes').format("HH:mm:ss")} ]`);
+        await delay(delayMinutes);
     }
+
 })();
