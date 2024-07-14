@@ -145,6 +145,15 @@ console.log(header);
                     );
                     const formattedHotBalance = formatAmount(hotBalance);
                     console.log(`Saldo HOT: ${formattedHotBalance} HOT`);
+
+                    // Send message with formattedHotBalance included
+                    if (botConfirm.useTelegramBot) {
+                        await bot.sendMessage(
+                            userId,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Saldo*: ${formattedHotBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            { disable_web_page_preview: true, parse_mode: 'Markdown' }
+                        );
+                    }
                 } catch (balanceError) {
                     console.error(`Error getting balance for ${ACCOUNT_ID}: ${balanceError}`);
                 }
@@ -152,18 +161,6 @@ console.log(header);
                 console.log(`Tx: https://nearblocks.io/id/txns/${transactionHash}`);
                 console.log("====");
 
-                // SEND NOTIFICATION BOT
-                if (botConfirm.useTelegramBot) {
-                    try {
-                        await bot.sendMessage(
-                            userId,
-                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Saldo*: ${formattedHotBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
-                            { disable_web_page_preview: true, parse_mode: 'Markdown' }
-                        );
-                    } catch (error) {
-                        console.log(`Send message failed, ${error}`)
-                    }
-                }
             } catch (error) {
                 console.error(`Error processing ${ACCOUNT_ID}: ${error}`);
             }
