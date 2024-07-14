@@ -141,7 +141,8 @@ console.log(header);
                     if (isNaN(hotBalance)) {
                         console.log(`Error: Tidak dapat mem-parsing saldo dari ${hotBalanceRaw}`);
                     } else {
-                        console.log(`Balance: ${hotBalance.toFixed(6)} HOT`);
+                        const formattedBalance = (hotBalance / 1e6).toFixed(6); // Convert to desired format
+                        console.log(`Balance: ${formattedBalance} HOT`);
                     }
                 } catch (error) {
                     console.error(`Error calling NEAR view: ${error}`);
@@ -151,6 +152,7 @@ console.log(header);
                 console.log(`Akun: ${ACCOUNT_ID}`);
                 console.log(`Jumlah: ${formattedUserAmount} HOT (for user)`);
                 console.log(`Jumlah: ${formattedVillageAmount} HOT (for village)`);
+                console.log(`Balance: ${formattedBalance} HOT`); // Added balance display
                 console.log(`Tx: https://nearblocks.io/id/txns/${transactionHash}`);
                 console.log("====");
 
@@ -159,7 +161,7 @@ console.log(header);
                     try {
                         await bot.sendMessage(
                             userId,
-                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n- Balance: ${formattedBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
                             { disable_web_page_preview: true, parse_mode: 'Markdown' }
                         );
                     } catch (error) {
