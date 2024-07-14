@@ -40,6 +40,9 @@ dotenv.config();
                 // Get wallet instance
                 const wallet = await connection.account(ACCOUNT_ID);
 
+                // Log ACCOUNT_ID and argument object
+                console.log(`Processing ${ACCOUNT_ID}`);
+
                 // Get HOT balance
                 const hotBalance = await wallet.viewFunction(
                     "game.hot.tg",
