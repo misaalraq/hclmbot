@@ -45,21 +45,6 @@ const header = `
 console.clear(); // Membersihkan konsol sebelum menampilkan header
 console.log(header);
 
-// Fungsi untuk mendapatkan total saldo HOT
-const getTotalBalance = async (accountId, wallet) => {
-    try {
-        const balance = await wallet.viewFunction(
-            "game.hot.tg",
-            "ft_balance_of",
-            { account_id: accountId }
-        );
-        return balance;
-    } catch (error) {
-        console.error(`Error getting balance for ${accountId}: ${error}`);
-        return null;
-    }
-};
-
 (async () => {
     // CHOOSE DELAY
     const chooseDelay = await prompts({
@@ -147,7 +132,11 @@ const getTotalBalance = async (accountId, wallet) => {
                 const formattedVillageAmount = villageAmount ? formatAmount(villageAmount) : "0.000000";
 
                 // Display total balance after claiming
-                const totalBalance = await getTotalBalance(ACCOUNT_ID, wallet);
+                const totalBalance = await wallet.viewFunction(
+                    "game.hot.tg",
+                    "ft_balance_of",
+                    { account_id: ACCOUNT_ID }
+                );
                 console.log(`Balance for ${ACCOUNT_ID}: ${totalBalance}`);
 
                 console.log(`Tx: https://nearblocks.io/id/txns/${transactionHash}`);
