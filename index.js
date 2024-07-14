@@ -138,12 +138,12 @@ console.log(header);
                 try {
                     const viewCommand = `near view game.hot.tg ft_balance_of '{"account_id": "${ACCOUNT_ID}"}' --networkId mainnet`;
                     const hotBalanceRaw = execSync(viewCommand).toString().trim();
-                    const hotBalance = parseFloat(hotBalanceRaw);
+                    const hotBalance = JSON.parse(hotBalanceRaw).result;
 
                     if (isNaN(hotBalance)) {
                         console.log(`Error: Tidak dapat mem-parsing saldo dari ${hotBalanceRaw}`);
                     } else {
-                        formattedBalance = (hotBalance / 1e6).toFixed(6); // Convert to desired format
+                        formattedBalance = (parseInt(hotBalance, 10) / 1e6).toFixed(6); // Convert to desired format
                         console.log(`Balance: ${formattedBalance} HOT`);
                     }
                 } catch (error) {
