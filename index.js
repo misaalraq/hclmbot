@@ -119,8 +119,8 @@ const getBalance = async (wallet, accountId) => {
                     .map(outcome => outcome.outcome.logs)
                     .flat();
 
-                // Wait for transaction to be finalized (optional)
-                await connection.provider.txStatus(transactionHash, ACCOUNT_ID);
+                // Wait for transaction to be finalized
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Delay for 5 seconds (adjust as necessary)
 
                 // GET UPDATED BALANCE
                 const balance = await getBalance(wallet, ACCOUNT_ID);
@@ -130,14 +130,10 @@ const getBalance = async (wallet, accountId) => {
                     return (parseInt(amount, 10) / 1e6).toFixed(6);
                 };
 
-                const formattedUserAmount = userAmount ? formatAmount(userAmount) : "0.000000";
-                const formattedVillageAmount = villageAmount ? formatAmount(villageAmount) : "0.000000";
                 const formattedBalance = balance ? formatAmount(balance) : "0.000000";
 
                 console.log(`Claim Berhasil!`);
                 console.log(`Akun: ${ACCOUNT_ID}`);
-                console.log(`Jumlah: ${formattedUserAmount} HOT (for user)`);
-                console.log(`Jumlah: ${formattedVillageAmount} HOT (for village)`);
                 console.log(`Balance HOT: ${formattedBalance}`);
                 console.log(`Tx: https://nearblocks.io/id/txns/${transactionHash}`);
                 console.log("====");
@@ -147,7 +143,7 @@ const getBalance = async (wallet, accountId) => {
                     try {
                         await bot.sendMessage(
                             userId,
-                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Balance*:\n- ${formattedBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Balance*:\n- ${formattedBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
                             { disable_web_page_preview: true, parse_mode: 'Markdown' }
                         );
                     } catch (error) {
