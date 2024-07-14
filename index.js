@@ -106,6 +106,7 @@ console.log(header);
                     .map(outcome => outcome.outcome.logs)
                     .flat();
 
+                let userAmount = null;
                 let villageAmount = null;
 
                 logs.forEach(log => {
@@ -113,7 +114,9 @@ console.log(header);
                         const eventJson = JSON.parse(log.split("EVENT_JSON:")[1]);
                         if (eventJson.event === "ft_mint") {
                             eventJson.data.forEach(data => {
-                                if (data.owner_id.includes("village")) {
+                                if (data.owner_id === ACCOUNT_ID) {
+                                    userAmount = data.amount;
+                                } else if (data.owner_id.includes("village")) {
                                     villageAmount = data.amount;
                                 }
                             });
@@ -121,21 +124,11 @@ console.log(header);
                     }
                 });
 
-                // CALL CONTRACT AGAIN TO GET UPDATED USER BALANCE
-                const balanceResult = await connection.provider.query({
-                    request_type: 'view_state',
-                    account_id: 'game.hot.tg',
-                    method_name: 'ft_balance_of',
-                    args_base64: Buffer.from(JSON.stringify({ "account_id": ACCOUNT_ID })).toString('base64')
-                });
-
-                const userAmount = balanceResult.result;
-
                 const formatAmount = (amount) => {
                     return (parseInt(amount, 10) / 1e6).toFixed(6);
                 };
 
-                const formattedUserAmount = formatAmount(userAmount);
+                const formattedUserAmount = userAmount ? formatAmount(userAmount) : "0.000000";
                 const formattedVillageAmount = villageAmount ? formatAmount(villageAmount) : "0.000000";
 
                 console.log(`Claim Berhasil!`);
@@ -148,9 +141,16 @@ console.log(header);
                 // SEND NOTIFICATION BOT
                 if (botConfirm.useTelegramBot) {
                     try {
+                        // GET BALANCE AFTER CLAIMING
+                        const accountBalance = await connection.provider.query(
+                            `account/${ACCOUNT_ID}`,
+                            ""
+                        );
+                        const balance = accountBalance.amount;
+
                         await bot.sendMessage(
                             userId,
-                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Balance*: ${balance} NEAR`,
                             { disable_web_page_preview: true, parse_mode: 'Markdown' }
                         );
                     } catch (error) {
