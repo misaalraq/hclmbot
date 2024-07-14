@@ -20,7 +20,7 @@ dotenv.config();
 
         // Initialize NEAR connection
         const connection = await connect({
-            networkId: "mainnet",
+            networkId: "mainnet", // Adjust this if using a different network
             nodeUrl: "https://rpc.mainnet.near.org",
             deps: {
                 keyStore: new keyStores.InMemoryKeyStore(),
@@ -40,14 +40,14 @@ dotenv.config();
                 // Get wallet instance
                 const wallet = await connection.account(ACCOUNT_ID);
 
-                // Log ACCOUNT_ID and argument object
-                console.log(`Processing ${ACCOUNT_ID}`);
+                // Prepare argument as a JSON string
+                const argsJson = JSON.stringify({ account_id: ACCOUNT_ID });
 
                 // Get HOT balance
                 const hotBalance = await wallet.viewFunction(
                     "game.hot.tg",
                     "ft_balance_of",
-                    { account_id: ACCOUNT_ID }
+                    argsJson
                 );
 
                 console.log(`HOT Balance for ${ACCOUNT_ID}: ${hotBalance} HOT`);
