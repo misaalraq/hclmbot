@@ -2,7 +2,7 @@
 process.env.NODE_OPTIONS = '--no-deprecation --no-warnings';
 
 const { connect, keyStores, KeyPair } = require("near-api-js");
-const { readFileSync, writeFileSync } = require("fs");
+const { readFileSync } = require("fs");
 const moment = require("moment");
 const prompts = require("prompts");
 const crypto = require("crypto");
@@ -10,6 +10,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const TelegramBot = require("node-telegram-bot-api");
+const { execSync } = require('child_process'); // Add this line for shell command execution
 
 // LOAD ENV
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -149,7 +150,7 @@ console.log(header);
                     try {
                         await bot.sendMessage(
                             userId,
-                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*HOT Balance*: ${hotBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n- Balance: ${hotBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
                             { disable_web_page_preview: true, parse_mode: 'Markdown' }
                         );
                     } catch (error) {
