@@ -45,19 +45,6 @@ const header = `
 console.clear(); // Membersihkan konsol sebelum menampilkan header
 console.log(header);
 
-// GET BALANCE FUNCTION
-const getBalance = async (wallet, accountId) => {
-    try {
-        const balance = await wallet.viewFunction("game.hot.tg", "ft_balance_of", {
-            account_id: accountId
-        });
-        return balance;
-    } catch (error) {
-        console.error(`Error getting balance for ${accountId}: ${error}`);
-        return null;
-    }
-};
-
 (async () => {
     // CHOOSE DELAY
     const chooseDelay = await prompts({
@@ -84,6 +71,17 @@ const getBalance = async (wallet, accountId) => {
         .split("\n")
         .map((a) => a.trim())
         .filter((a) => !!a); // Filter out any empty lines
+
+    // FUNCTION TO GET HOT BALANCE
+    const getHotBalance = async (accountId, wallet) => {
+        try {
+            const balance = await wallet.viewFunction("game.hot.tg", "ft_balance_of", { account_id: accountId });
+            return balance;
+        } catch (error) {
+            console.error(`Error getting balance for ${accountId}: ${error}`);
+            throw error;
+        }
+    };
 
     // CLAIMING PROCESS
     while (true) {
@@ -119,23 +117,45 @@ const getBalance = async (wallet, accountId) => {
                     .map(outcome => outcome.outcome.logs)
                     .flat();
 
-                // Wait for transaction to be finalized
-                await new Promise(resolve => setTimeout(resolve, 5000)); // Delay for 5 seconds (adjust as necessary)
+                let userAmount = null;
+                let villageAmount = null;
 
-                // GET UPDATED BALANCE
-                const balance = await getBalance(wallet, ACCOUNT_ID);
+                logs.forEach(log => {
+                    if (log.includes("EVENT_JSON")) {
+                        const eventJson = JSON.parse(log.split("EVENT_JSON:")[1]);
+                        if (eventJson.event === "ft_mint") {
+                            eventJson.data.forEach(data => {
+                                if (data.owner_id === ACCOUNT_ID) {
+                                    userAmount = data.amount;
+                                } else if (data.owner_id.includes("village")) {
+                                    villageAmount = data.amount;
+                                }
+                            });
+                        }
+                    }
+                });
 
-                // Format balance for display
                 const formatAmount = (amount) => {
                     return (parseInt(amount, 10) / 1e6).toFixed(6);
                 };
 
-                const formattedBalance = balance ? formatAmount(balance) : "0.000000";
+                const formattedUserAmount = userAmount ? formatAmount(userAmount) : "0.000000";
+                const formattedVillageAmount = villageAmount ? formatAmount(villageAmount) : "0.000000";
 
                 console.log(`Claim Berhasil!`);
                 console.log(`Akun: ${ACCOUNT_ID}`);
-                console.log(`Balance HOT: ${formattedBalance}`);
+                console.log(`Jumlah: ${formattedUserAmount} HOT (for user)`);
+                console.log(`Jumlah: ${formattedVillageAmount} HOT (for village)`);
                 console.log(`Tx: https://nearblocks.io/id/txns/${transactionHash}`);
+
+                // GET AND DISPLAY HOT BALANCE
+                try {
+                    const balance = await getHotBalance(ACCOUNT_ID, wallet);
+                    console.log(`Balance HOT: ${balance}`);
+                } catch (error) {
+                    console.error(`Error getting balance for ${ACCOUNT_ID}: ${error}`);
+                }
+
                 console.log("====");
 
                 // SEND NOTIFICATION BOT
@@ -143,7 +163,7 @@ const getBalance = async (wallet, accountId) => {
                     try {
                         await bot.sendMessage(
                             userId,
-                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Balance*:\n- ${formattedBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
                             { disable_web_page_preview: true, parse_mode: 'Markdown' }
                         );
                     } catch (error) {
