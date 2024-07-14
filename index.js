@@ -7,7 +7,6 @@ const moment = require("moment");
 const prompts = require("prompts");
 const crypto = require("crypto");
 const dotenv = require('dotenv');
-const { execSync } = require('child_process');
 dotenv.config();
 
 const TelegramBot = require("node-telegram-bot-api");
@@ -150,7 +149,7 @@ console.log(header);
                     try {
                         await bot.sendMessage(
                             userId,
-                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n- HOT Balance: ${hotBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*HOT Balance*: ${hotBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
                             { disable_web_page_preview: true, parse_mode: 'Markdown' }
                         );
                     } catch (error) {
