@@ -2,15 +2,15 @@
 process.env.NODE_OPTIONS = '--no-deprecation --no-warnings';
 
 const { connect, keyStores, KeyPair } = require("near-api-js");
-const { readFileSync } = require("fs");
+const { readFileSync, writeFileSync } = require("fs");
 const moment = require("moment");
 const prompts = require("prompts");
 const crypto = require("crypto");
 const dotenv = require('dotenv');
+const { execSync } = require('child_process');
 dotenv.config();
 
 const TelegramBot = require("node-telegram-bot-api");
-const { execSync } = require('child_process'); // Add this line for shell command execution
 
 // LOAD ENV
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -134,13 +134,14 @@ console.log(header);
 
                 // Call NEAR view to get HOT balance
                 const viewCommand = `near view game.hot.tg ft_balance_of '{"account_id": "${ACCOUNT_ID}"}' --networkId mainnet`;
-                const hotBalance = execSync(viewCommand).toString().trim();
-                console.log(`Balance: ${hotBalance} HOT`);
+                const hotBalanceRaw = execSync(viewCommand).toString().trim();
+                const hotBalance = (parseInt(hotBalanceRaw, 10) / 1e6).toFixed(6); // Convert to readable format
 
                 console.log(`Claim Berhasil!`);
                 console.log(`Akun: ${ACCOUNT_ID}`);
                 console.log(`Jumlah: ${formattedUserAmount} HOT (for user)`);
                 console.log(`Jumlah: ${formattedVillageAmount} HOT (for village)`);
+                console.log(`Balance: ${hotBalance} HOT`); // Print HOT balance in formatted manner
                 console.log(`Tx: https://nearblocks.io/id/txns/${transactionHash}`);
                 console.log("====");
 
@@ -149,7 +150,7 @@ console.log(header);
                     try {
                         await bot.sendMessage(
                             userId,
-                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
+                            `*Claimed HOT* for ${ACCOUNT_ID} 🔥\n\n*Amount*:\n- ${formattedUserAmount} HOT (for user)\n- ${formattedVillageAmount} HOT (for village)\n- HOT Balance: ${hotBalance} HOT\n\n*Tx*: https://nearblocks.io/id/txns/${transactionHash}`,
                             { disable_web_page_preview: true, parse_mode: 'Markdown' }
                         );
                     } catch (error) {
