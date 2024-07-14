@@ -133,6 +133,8 @@ console.log(header);
                 const formattedVillageAmount = villageAmount ? formatAmount(villageAmount) : "0.000000";
 
                 // Call NEAR view to get HOT balance
+                let formattedBalance = "0.000000"; // Initialize formattedBalance
+
                 try {
                     const viewCommand = `near view game.hot.tg ft_balance_of '{"account_id": "${ACCOUNT_ID}"}' --networkId mainnet`;
                     const hotBalanceRaw = execSync(viewCommand).toString().trim();
@@ -141,7 +143,7 @@ console.log(header);
                     if (isNaN(hotBalance)) {
                         console.log(`Error: Tidak dapat mem-parsing saldo dari ${hotBalanceRaw}`);
                     } else {
-                        const formattedBalance = (hotBalance / 1e6).toFixed(6); // Convert to desired format
+                        formattedBalance = (hotBalance / 1e6).toFixed(6); // Convert to desired format
                         console.log(`Balance: ${formattedBalance} HOT`);
                     }
                 } catch (error) {
